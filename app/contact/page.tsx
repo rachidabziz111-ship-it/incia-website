@@ -2,12 +2,30 @@
 
 import { useState, useEffect } from "react";
 import { Amiri } from "next/font/google";
+import { createClient } from "next-sanity";
 
 const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"] });
 
+// 1. إعداد الاتصال مع Sanity
+const client = createClient({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+  dataset: "production",
+  apiVersion: "2024-03-09",
+  useCdn: false,
+});
+
+// تعريف نوع بيانات الموظف
+type Employee = {
+  _id: string;
+  name: string;
+  role: string;
+  whatsapp: string;
+  imageUrl?: string;
+};
+
 export default function ContactPage() {
-  // 1. هنا غنخبيو النمرة لي غنجيبو من Strapi أوتوماتيكيا
-  const [dynamicWhatsappNumber, setDynamicWhatsappNumber] = useState<string | null>(null);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false); // التحكم في النافذة
 
   const [formData, setFormData] = useState({
     name: "",
@@ -17,49 +35,45 @@ export default function ContactPage() {
     message: ""
   });
 
-  // 2. هاد الـ useEffect غتمشي لـ Strapi تجيب نمرة الموظف النشيط غير تحل الصفحة
+  // 2. جلب الموظفين من Sanity
   useEffect(() => {
-    const fetchSettings = async () => {
+    const fetchEmployees = async () => {
       try {
-        const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
-        const API_TOKEN = process.env.NEXT_PUBLIC_STRAPI_API_TOKEN;
+        const query = `*[_type == "employee"]{
+          _id,
+          name,
+          role,
+          whatsapp,
+          "imageUrl": image.asset->url
+        }`;
         
-        // 👈 استعملنا نفس الرابط الصحيح ديال الموظفين
-        const res = await fetch(`${STRAPI_URL}/api/whats-app-agents?filters[isActive][$eq]=true`, {
-          headers: { Authorization: `Bearer ${API_TOKEN}` },
-          cache: 'no-store'
-        });
-        
-        if (!res.ok) return;
-        
-        const json = await res.json();
-        const agents = json.data;
-        
-        if (agents && agents.length > 0) {
-          const phone = agents[0]?.attributes?.phoneNumber || agents[0]?.phoneNumber;
-          if (phone) {
-            const cleanPhone = phone.replace(/[^0-9]/g, '');
-            setDynamicWhatsappNumber(cleanPhone);
-          }
-        }
+        const data = await client.fetch(query, {}, { cache: 'no-store' });
+        setEmployees(data || []);
       } catch (error) {
-        console.error("مشكل في جلب رقم الواتساب من Strapi:", error);
+        console.error("مشكل في جلب الموظفين من Sanity:", error);
       }
     };
 
-    fetchSettings();
+    fetchEmployees();
   }, []);
 
-  // دالة إرسال الرسالة للواتساب
-  const sendToWhatsApp = (e: React.FormEvent) => {
+  const cleanPhone = (phone: string) => phone.replace(/[^0-9]/g, '');
+
+  // 3. دالة إظهار نافذة اختيار الموظف عوض الإرسال المباشر
+  const handleOpenModal = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 👈 يلا مالقى حتى نمرة (مكاين تا موظف نشيط)، غيخرج ليه هاد الميساج
-    if (!dynamicWhatsappNumber) {
+    if (employees.length === 0) {
       alert("عذرا، لا يوجد موظف متاح حاليا لاستقبال رسالتك. المرجو المحاولة لاحقا.");
       return;
     }
 
+    // فتح النافذة ليختار الكليان المستشار
+    setIsModalOpen(true);
+  };
+
+  // 4. دالة الإرسال الفعلي للواتساب بعد اختيار الموظف
+  const sendToWhatsApp = (employeeWhatsapp: string) => {
     const text = `السلام عليكم مختبر INCIA،
     
 *الاسم:* ${formData.name}
@@ -71,9 +85,10 @@ export default function ContactPage() {
 ${formData.message}`;
 
     const encodedText = encodeURIComponent(text);
-    const whatsappUrl = `https://wa.me/${dynamicWhatsappNumber}?text=${encodedText}`;
+    const whatsappUrl = `https://wa.me/${cleanPhone(employeeWhatsapp)}?text=${encodedText}`;
 
-    window.open(whatsappUrl, "_blank");
+    setIsModalOpen(false); // سد النافذة
+    window.open(whatsappUrl, "_blank"); // حل الواتساب
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -82,7 +97,7 @@ ${formData.message}`;
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-24">
+    <main className="min-h-screen bg-gray-50 pb-24 relative">
       
       {/* ---------- Hero Section ---------- */}
       <section className="relative bg-teal-900 text-white py-24 overflow-hidden">
@@ -129,10 +144,9 @@ ${formData.message}`;
                     <span className="text-[#D4AF37] text-xl">📞</span>
                   </div>
                   <div>
-                    <h4 className="text-teal-100 font-semibold mb-1">الهاتف المحمول / واتساب</h4>
-                    {/* 👈 هنا النمرة لي كطافيشا للناس ولات ديناميكية */}
-                    <p className="text-white" dir="ltr">
-                      {dynamicWhatsappNumber ? `+${dynamicWhatsappNumber}` : "الرقم غير متاح حاليا"}
+                    <h4 className="text-teal-100 font-semibold mb-1">واتساب المباشر</h4>
+                    <p className="text-white text-sm mt-1">
+                      {employees.length > 0 ? "اختر مستشاراً من القائمة عند المراسلة" : "الخدمة غير متاحة حاليا"}
                     </p>
                   </div>
                 </div>
@@ -156,10 +170,10 @@ ${formData.message}`;
               أرسل لنا رسالة عبر واتساب
             </h3>
             <p className="text-gray-500 mb-8">
-              املأ الاستمارة وسنقوم بتحويلك مباشرة للتواصل معنا عبر واتساب.
+              املأ الاستمارة وسنقوم بتحويلك لاختيار المستشار المناسب للتواصل معه عبر واتساب.
             </p>
 
-            <form onSubmit={sendToWhatsApp} className="space-y-6">
+            <form onSubmit={handleOpenModal} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">الاسم الكامل *</label>
@@ -233,7 +247,7 @@ ${formData.message}`;
                 type="submit"
                 className="w-full flex justify-center items-center gap-2 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-lg py-4 rounded-lg transition duration-300 shadow-md"
               >
-                <span>إرسال عبر واتساب</span>
+                <span>متابعة لإرسال الرسالة</span>
                 <span className="text-2xl">💬</span>
               </button>
             </form>
@@ -241,6 +255,56 @@ ${formData.message}`;
 
         </div>
       </section>
+
+      {/* ---------- النافذة (Modal) لي غتطلع ملي يعمر الفورم ---------- */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden border border-gray-100" dir="rtl">
+            
+            <div className="bg-[#25D366] text-white p-5 flex justify-between items-center">
+              <h3 className="font-bold text-xl">اختر المستشار لإرسال الرسالة</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-white hover:text-gray-200 text-3xl leading-none focus:outline-none">
+                &times;
+              </button>
+            </div>
+            
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              <p className="text-gray-600 mb-6 text-sm text-center bg-green-50 p-3 rounded-lg border border-green-100">
+                لقد تم تجهيز رسالتك بنجاح! المرجو اختيار المستشار الذي تود إرسالها إليه:
+              </p>
+              
+              <div className="space-y-3">
+                {employees.map((emp) => (
+                  <button
+                    key={emp._id}
+                    onClick={() => sendToWhatsApp(emp.whatsapp)} // ملي يختار المستشار، غيصيفط ليه
+                    className="w-full flex items-center p-3 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-[#25D366] hover:shadow-md transition-all group text-right"
+                  >
+                    <div className="w-14 h-14 rounded-full bg-gray-100 overflow-hidden flex-shrink-0 ml-4 border-2 border-transparent group-hover:border-[#25D366] transition-colors">
+                      {emp.imageUrl ? (
+                        <img src={emp.imageUrl} alt={emp.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-2xl">👤</div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1">
+                      <h4 className="font-bold text-gray-800 text-lg group-hover:text-[#25D366] transition-colors">{emp.name}</h4>
+                      <p className="text-sm text-gray-500 mt-1">{emp.role || 'خدمة العملاء'}</p>
+                    </div>
+                    
+                    <div className="text-[#25D366] bg-[#25D366]/10 w-10 h-10 flex items-center justify-center rounded-full group-hover:bg-[#25D366] group-hover:text-white transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16" className="transform rotate-180">
+                        <path fillRule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"/>
+                      </svg>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </main>
   );

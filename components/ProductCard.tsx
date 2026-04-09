@@ -1,38 +1,29 @@
 "use client";
 
-// زدينا useState هنا باش نتحكمو فالكمية
-import { useState } from "react"; 
+import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 
 export default function ProductCard({ product }: { product: any }) {
   const { addToCart } = useCart();
 
-  const { id, title, description, basePrice, moq, images } = product;
+  const { id, name, description, price, minOrder, image } = product;
 
-  const displayTitle = title || "منتج بدون اسم";
-  const displayPrice = basePrice || 0;
-  const displayMoq = moq || 1;
+  const displayTitle = name || "منتج بدون اسم";
+  const displayPrice = price || 0;
+  const displayMoq = minOrder || 1;
 
-  // هادي هي الذاكرة ديال العداد، كيبدا من الكمية الأدنى (MOQ)
   const [selectedQuantity, setSelectedQuantity] = useState(displayMoq);
 
   let displayDescription = "لا يوجد وصف"; 
   if (typeof description === 'string') {
     displayDescription = description;
-  } else if (Array.isArray(description) && description[0]?.children?.[0]?.text) {
-    displayDescription = description[0].children[0].text;
   }
 
-  let imageUrl = "/placeholder-product.jpg"; 
-  if (images && Array.isArray(images) && images.length > 0 && images[0].url) {
-      imageUrl = `http://localhost:1337${images[0].url}`;
-  }
+  const imageUrl = image || "/placeholder-product.jpg"; 
 
-  // دوال الزيادة والنقصان
   const increaseQuantity = () => setSelectedQuantity((prev:any) => prev + 1);
   const decreaseQuantity = () => {
-    // باش الكليان ميهبطش على الكمية الأدنى
     if (selectedQuantity > displayMoq) {
       setSelectedQuantity((prev:any) => prev - 1);
     }
@@ -43,12 +34,11 @@ export default function ProductCard({ product }: { product: any }) {
       id: id,
       title: displayTitle,
       price: displayPrice,
-      quantity: selectedQuantity, // كنصيفطو الكمية لي عزل الكليان
+      quantity: selectedQuantity,
       moq: displayMoq,
     });
     alert(`تمت إضافة ${selectedQuantity} من ${displayTitle} إلى السلة!`);
     
-    // نرجعو العداد للكمية الأدنى من بعد ما يضيفو للسلة
     setSelectedQuantity(displayMoq); 
   };
 
@@ -68,7 +58,6 @@ export default function ProductCard({ product }: { product: any }) {
         
         <div className="mt-auto pt-4 border-t border-gray-50 flex flex-col gap-4">
           
-          {/* معلومات الثمن والكمية الأدنى */}
           <div>
             <div className="text-xs text-gray-500 mb-1">الكمية الأدنى للطلب: {displayMoq}</div>
             <div className="font-bold text-teal-700 text-lg">
@@ -76,12 +65,9 @@ export default function ProductCard({ product }: { product: any }) {
             </div>
           </div>
           
-          {/* قسم العداد وزر الإضافة */}
           <div className="flex justify-between items-center gap-2">
             
-            {/* العداد (- / +) */}
             <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 h-10 w-28">
-              {/* زر الزيادة */}
               <button 
                 onClick={increaseQuantity}
                 className="w-8 h-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors font-bold"
@@ -89,12 +75,10 @@ export default function ProductCard({ product }: { product: any }) {
                 +
               </button>
               
-              {/* الرقم */}
               <span className="flex-grow text-center text-sm font-bold text-gray-800">
                 {selectedQuantity}
               </span>
               
-              {/* زر النقصان */}
               <button 
                 onClick={decreaseQuantity}
                 disabled={selectedQuantity <= displayMoq}
@@ -104,7 +88,6 @@ export default function ProductCard({ product }: { product: any }) {
               </button>
             </div>
             
-            {/* بوطونة الإضافة للسلة */}
             <button 
               onClick={handleAddToCart}
               className="flex-grow bg-teal-50 text-teal-700 hover:bg-teal-600 hover:text-white h-10 px-4 rounded-lg transition-colors shadow-sm flex items-center justify-center gap-2 font-bold text-sm"

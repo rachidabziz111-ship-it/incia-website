@@ -1,20 +1,34 @@
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { Amiri } from "next/font/google";
+import { createClient } from "next-sanity";
+
+// إعداد الاتصال مع Sanity
+const client = createClient({
+  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID, // كيجيب الـ ID من ملف .env ديالك
+  dataset: "production",
+  apiVersion: "2024-03-09", // أو أي تاريخ حديث
+  useCdn: false,
+});
 
 const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"] });
 
-// دالة جلب البيانات من Strapi
+// دالة جلب البيانات من Sanity
 async function getProducts() {
   try {
-    const res = await fetch('http://localhost:1337/api/products?populate=*', {
-      cache: 'no-store' // باش ديما يجيب الجديد وميحتفظش بالنسخة القديمة
-    });
-    if (!res.ok) {
-      throw new Error('Failed to fetch data');
-    }
-    const json = await res.json();
-    return json.data || [];
+    // كود GROQ باش نجيبو السلعة والتصاور ديالها مقادين
+    const query = `*[_type == "product"] {
+      "id": _id,
+      name,
+      description,
+      price,
+      minOrder,
+      "image": image.asset->url
+    }`;
+    
+    // fetch data
+    const products = await client.fetch(query, {}, { cache: 'no-store' });
+    return products || [];
   } catch (error) {
     console.error("Error fetching products:", error);
     return [];
@@ -60,7 +74,7 @@ export default async function ProductsPage() {
               لا توجد منتجات حالياً
             </h3>
             <p className={`${amiri.className} text-gray-500`} dir="rtl">
-              المرجو إضافة المنتجات والصور من لوحة تحكم Strapi الخاصة بك ليتم عرضها هنا.
+              المرجو إضافة المنتجات والصور من لوحة تحكم Sanity الخاصة بك ليتم عرضها هنا.
             </p>
           </div>
         )}

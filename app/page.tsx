@@ -2,21 +2,28 @@ import Image from "next/image";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import { Amiri } from "next/font/google"; 
+// 1. جبنا الكلاينت ديال Sanity باش نقراو الداتا
+import { client } from '@/sanity/lib/client';
 
 const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"] });
 
+// 2. بدلنا طريقة جلب البيانات باش تولي تقرا من Sanity
 async function getProducts() {
   try {
-    const res = await fetch('http://localhost:1337/api/products?populate=*', {
-      cache: 'no-store'
-    });
-    if (!res.ok) {
-      throw new Error('Failed to fetch data');
-    }
-    const json = await res.json();
-    return json.data || [];
+    // هادي سميتها GROQ Query (بحال SQL ديال Sanity)
+    const query = `*[_type == "product"] | order(_createdAt desc) {
+      "id": _id,
+      name,
+      price,
+      minOrder,
+      "image": image.asset->url,
+      description
+    }`;
+    
+    const products = await client.fetch(query);
+    return products || [];
   } catch (error) {
-    console.error("Error fetching products:", error);
+    console.error("Error fetching products from Sanity:", error);
     return [];
   }
 }
@@ -202,21 +209,20 @@ function GoldCardSection() {
   );
 }
 
-// ---------- 🎖️ Certifications & Trust Section (شواهد وتراخيص) ----------
+// ---------- Certifications Section ----------
 function CertificationsSection() {
   const certifications = [
-    { name: "وزارة الصحة", src: "/moh.png" },       
-    { name: "ISO 22000", src: "/iso.png" },         
-    { name: "AMMPS", src: "/ammps.png" },           
-    { name: "ONSSA", src: "/onssa.png" },           
-    { name: "IMANOR", src: "/imanor.png" },         
-    { name: "FDA", src: "/fda.png" },               
+    { name: "وزارة الصحة", src: "/moh.png" },      
+    { name: "ISO 22000", src: "/iso.png" },        
+    { name: "AMMPS", src: "/ammps.png" },          
+    { name: "ONSSA", src: "/onssa.png" },          
+    { name: "IMANOR", src: "/imanor.png" },        
+    { name: "FDA", src: "/fda.png" },              
   ];
 
   return (
     <section className="py-16 bg-gray-50 border-t border-b border-gray-200 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10 text-center">
-        {/* العنوان باللون الذهبي */}
         <h2 className={`${amiri.className} text-3xl md:text-4xl font-bold text-[#8B6508] mb-4`} dir="rtl">
           شواهد وتراخيص
         </h2>
@@ -247,16 +253,13 @@ function CertificationsSection() {
         <div className="animate-logos flex items-center">
           {[...certifications, ...certifications].map((cert, index) => (
             <div key={index} className="flex-none w-40 md:w-56 mx-4 flex items-center justify-center hover:scale-105 transition-transform duration-300">
-              {/* حيدنا grayscale وزدنا hover:scale-105 باش يكبرو شوية ملي تدوز عليهم بلاصوري */}
               <div className="relative w-32 h-20 md:w-40 md:h-24 bg-white rounded-lg shadow-sm border border-gray-100 flex items-center justify-center p-4">
-                 
                  <Image 
                     src={cert.src} 
                     alt={cert.name} 
                     fill 
                     className="object-contain p-2"
                  />
-                 
               </div>
             </div>
           ))}
@@ -285,7 +288,7 @@ async function FeaturedProducts() {
             ))
           ) : (
             <div className="col-span-full text-center text-gray-500 py-8">
-              لا توجد منتجات حاليا. المرجو إضافتها من لوحة تحكم Strapi.
+              لا توجد منتجات حاليا. المرجو إضافتها من لوحة تحكم Sanity.
             </div>
           )}
         </div>
@@ -312,10 +315,7 @@ export default async function HomePage() {
       <GlassMarquee />
       <GoldCardSection /> 
       <FeaturedProducts />
-      
-      {/* 👈 هاهي فقرة الشواهد والتراخيص بالألوان والعنوان الذهبي */}
       <CertificationsSection />
-      
       <Footer />
     </main>
   );
