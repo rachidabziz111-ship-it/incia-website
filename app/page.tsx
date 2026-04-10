@@ -4,6 +4,8 @@ import ProductCard from "@/components/ProductCard";
 import { Amiri } from "next/font/google"; 
 // 1. جبنا الكلاينت ديال Sanity باش نقراو الداتا
 import { client } from '@/sanity/lib/client';
+// 3. جبنا القائمة الفوقانية (Header) من الملف الجديد لي صاوبنا
+import Header from "@/components/Header";
 
 const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"] });
 
@@ -26,43 +28,6 @@ async function getProducts() {
     console.error("Error fetching products from Sanity:", error);
     return [];
   }
-}
-
-// ---------- Header Component ----------
-function Header() {
-  return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">I</span>
-            </div>
-            <span className="font-serif text-xl font-semibold text-gray-900">
-              INCIA<span className="text-teal-600">®</span>
-            </span>
-          </Link>
-
-          <nav className="hidden md:flex space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-teal-600 transition">Home</Link>
-            <Link href="/products" className="text-gray-700 hover:text-teal-600 transition">Products</Link>
-            <Link href="/about" className="text-gray-700 hover:text-teal-600 transition">Lab</Link>
-            <Link href="/wholesale" className="text-gray-700 hover:text-teal-600 transition">Wholesale</Link>
-            <Link href="/contact" className="text-gray-700 hover:text-teal-600 transition">Contact</Link>
-          </nav>
-
-          <div>
-            <Link
-              href="/wholesale"
-              className="hidden sm:inline-block bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-full text-sm font-semibold transition shadow-md hover:shadow-lg"
-            >
-              Become a Partner
-            </Link>
-          </div>
-        </div>
-      </div>
-    </header>
-  );
 }
 
 // ---------- Footer Component ----------
@@ -281,7 +246,8 @@ async function FeaturedProducts() {
           <p className="mt-2 text-gray-600">High‑demand products with bulk pricing</p>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* التعديل كاين فهاد السطر باش يبانو جوج فالتليفون */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
           {products && products.length > 0 ? (
             products.map((product: any) => (
               <ProductCard key={product.id} product={product} />

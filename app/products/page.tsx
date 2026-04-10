@@ -60,7 +60,8 @@ export default async function ProductsPage() {
       {/* ---------- Products Grid ---------- */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
         {products && products.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          /* السطر اللي تعدل باش يبانو جوج منتجات فالتليفون */
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {products.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             ))}
