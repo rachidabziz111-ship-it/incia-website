@@ -186,6 +186,10 @@ export default function ClinicPage() {
           </span>
           <span className={`${amiri.className} text-black font-bold text-base md:text-lg mx-6`}>
             عناية طبية متقدمة • بروتوكولات علاجية آمنة وفعالة • خبراء وأطباء رهن إشارتك • حجز المواعيد متاح الآن •
+             </span>
+          <span className={`${amiri.className} text-black font-bold text-base md:text-lg mx-6`}>
+            عناية طبية متقدمة • بروتوكولات علاجية آمنة وفعالة • خبراء وأطباء رهن إشارتك • حجز المواعيد متاح الآن •
+          
           </span>
         </div>
       </div>
