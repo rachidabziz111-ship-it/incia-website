@@ -16,8 +16,8 @@ const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"] });
 // دالة جلب البيانات من Sanity
 async function getProducts() {
   try {
-    // كود GROQ باش نجيبو السلعة والتصاور ديالها مقادين
-    const query = `*[_type == "product"] {
+    // 👈 التعديل تم هنا: زدنا الفيلتر ديال الجملة والترتيب
+    const query = `*[_type == "product" && targetMarket in ["wholesale", "both"]] | order(_createdAt desc) {
       "id": _id,
       name,
       description,

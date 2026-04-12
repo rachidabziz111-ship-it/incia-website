@@ -56,8 +56,7 @@ export default function WhatsAppButton() {
       {/* ---------- البوطونة العائمة ---------- */}
       <button
         onClick={() => setIsOpen(true)} // ملي كنكليكيو، كتفتح النافذة
-        // التعديل هنا: ردينا z-40 لـ z-[9999] باش تبان الفوق كاع
-        className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:bg-[#20bd5a] transition-transform hover:scale-110 z-[9999] flex items-center justify-center"
+        className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:bg-[#20bd5a] transition-transform hover:scale-110 z-40 flex items-center justify-center"
         aria-label="تواصل معنا عبر الواتساب"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
@@ -67,8 +66,7 @@ export default function WhatsAppButton() {
 
       {/* ---------- النافذة (Modal) لي غتطلع ---------- */}
       {isOpen && (
-        // التعديل هنا: ردينا z-50 لـ z-[9999] باش حتى النافذة تبان فوق كلشي
-        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4 transition-opacity">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 transition-opacity">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden" dir="rtl">
             
             {/* رأس النافذة */}

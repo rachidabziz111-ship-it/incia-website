@@ -10,7 +10,8 @@ const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"] });
 
 async function getProducts() {
   try {
-    const query = `*[_type == "product"] | order(_createdAt desc) {
+    // 👈 التعديل تم هنا: زدنا الفيلتر باش يجيب غير ديال الجملة أو المشتركة
+    const query = `*[_type == "product" && targetMarket in ["wholesale", "both"]] | order(_createdAt desc)[0...4] {
       "id": _id,
       name,
       price,
@@ -75,7 +76,7 @@ function Footer() {
           </div>
         </div>
         <div className={`${amiri.className} border-t border-[#0d4a7a] mt-12 pt-6 text-center text-sm text-blue-200`}>
-          © {new Date().getFullYear()} مختبرات INCIA. ,جميع الحقوق محفوظة. نُصنّع نجاحك.
+          © {new Date().getFullYear()} مختبرات INCIA. ,جميع الحقوق  محفوظة. نُصنّع نجاحك.
         </div>
       </div>
     </footer>
