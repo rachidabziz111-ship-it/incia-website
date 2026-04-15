@@ -15,16 +15,20 @@ export const product = {
       type: 'boolean',
       initialValue: false,
     },
+    // --------------------------------------------------------
+    // تعديل 1: ردينا الثمن string باش يقبل ليك العوارض وكلمة "درهم"
+    // --------------------------------------------------------
     {
       name: 'price',
       title: 'الثمن',
-      type: 'number',
+      description: 'تقدر تكتب رقم أو نص بحال "150 - 250 درهم" أو "350د/400/550"',
+      type: 'string', 
     },
     {
       name: 'oldPrice',
       title: 'الثمن القديم (للتخفيضات)',
       description: 'اختياري: كتب الثمن القديم هنا باش يبان مضروب عليه فالموقع',
-      type: 'number',
+      type: 'string', // حتى هادا رديناه string باش يمشي مع الثمن العادي
     },
     {
       name: 'inStock',
@@ -80,24 +84,25 @@ export const product = {
       title: 'الحد الأدنى للطلب',
       type: 'number',
       initialValue: 50,
-      // هاد الخانة غتبان غير يلا كان المنتج ديال الجملة أو القسمين
       hidden: ({ document }: any) => document?.targetMarket === 'clinic',
     },
+    // --------------------------------------------------------
+    // تعديل 2: الأقسام الجديدة باش ننظمو المنتجات
+    // --------------------------------------------------------
     {
       name: 'treatmentType',
-      title: 'نوع العلاج (خاص بقسم العيادة)',
-      description: 'شنو المشكل لي كيعالجو هاد الباك؟',
+      title: 'القسم (خاص بقسم العيادة)',
+      description: 'اختار القسم المناسب باش يبان المنتج فالبلاصة ديالو فالموقع',
       type: 'string',
       options: {
         list: [
-          { title: 'حب الشباب والمسام الواسعة', value: 'acne' },
-          { title: 'الكلف والتصبغات', value: 'pigmentation' },
-          { title: 'التجاعيد وشد البشرة', value: 'anti-aging' },
-          { title: 'نضارة وترطيب', value: 'hydration' },
-          { title: 'عناية يومية روتينية', value: 'daily' },
+          { title: 'العناية بالبشرة والوجه', value: 'skin_care' },
+          { title: 'الجسم والمناطق الأنثوية', value: 'body_intimate' },
+          { title: 'الصحة والهضم والمفاصل', value: 'health_digestion' },
+          { title: 'الرشاقة (الزيادة ونقصان الوزن)', value: 'weight_fitness' },
+          { title: 'العناية بالشعر، الأسنان والعطور', value: 'hair_teeth_perfume' },
         ],
       },
-      // هاد الخانة غتبان غير يلا كان المنتج خاص بالعيادة أو بيهم بجوج
       hidden: ({ document }: any) => document?.targetMarket === 'wholesale',
     },
   ],

@@ -16,10 +16,21 @@ const client = createClient({
   useCdn: false,
 });
 
+// الأقسام الجديدة لي زدنا فـ Sanity
+const CATEGORIES = [
+  { id: 'all', name: 'جميع العلاجات' },
+  { id: 'skin_care', name: 'العناية بالبشرة والوجه' },
+  { id: 'body_intimate', name: 'الجسم والمناطق الأنثوية' },
+  { id: 'health_digestion', name: 'الصحة والهضم' },
+  { id: 'weight_fitness', name: 'الرشاقة والوزن' },
+  { id: 'hair_teeth_perfume', name: 'الشعر والأسنان' },
+];
+
 export default function ClinicPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [agents, setAgents] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all"); // حالة القسم النشط
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -71,25 +82,32 @@ export default function ClinicPage() {
     window.open(whatsappUrl, "_blank");
   };
 
-  // تصفية المنتجات حسب البحث
+  // 4. تصفية المنتجات حسب البحث والقسم
   const filteredProducts = products.filter((product: any) => {
-    if (!searchQuery) return true;
+    // الفلترة بالقسم
+    const matchesCategory = activeCategory === 'all' || product.treatmentType === activeCategory;
+    
+    // الفلترة بالبحث
     const term = searchQuery.toLowerCase();
-    return (
+    const matchesSearch = !searchQuery || (
       (product.name && product.name.toLowerCase().includes(term)) ||
-      (product.description && product.description.toLowerCase().includes(term)) ||
-      (product.treatmentType && product.treatmentType.toLowerCase().includes(term))
+      (product.description && product.description.toLowerCase().includes(term))
     );
+
+    return matchesCategory && matchesSearch;
   });
 
+  // العناوين الجديدة ديال الأقسام
   const treatmentTitles: Record<string, string> = {
-    'acne': 'علاجات حب الشباب والأمراض الجلدية',
-    'pigmentation': 'علاجات التصبغات وتوحيد لون البشرة',
-    'anti-aging': 'علاجات شد البشرة ومقاومة الشيخوخة',
-    'hydration': 'علاجات النضارة والترطيب العميق',
-    'daily': 'العناية الشاملة والروتين اليومي'
+    'skin_care': 'العناية بالبشرة والوجه',
+    'body_intimate': 'العناية بالجسم والمناطق الأنثوية',
+    'health_digestion': 'الصحة، الهضم والمفاصل',
+    'weight_fitness': 'الرشاقة (الزيادة ونقصان الوزن)',
+    'hair_teeth_perfume': 'العناية بالشعر، الأسنان والعطور',
+    'daily': 'علاجات عامة'
   };
 
+  // تجميع المنتجات حسب القسم (Grouping)
   const groupedProducts = filteredProducts.reduce((acc: any, product: any) => {
     const type = product.treatmentType || 'daily';
     if (!acc[type]) acc[type] = [];
@@ -97,10 +115,18 @@ export default function ClinicPage() {
     return acc;
   }, {});
 
+  // دالة صغيرة باش نقادو عرض الثمن
+  const renderPrice = (price: any) => {
+    if (!price) return 'حسب الاستشارة';
+    // يلا كان الثمن عبارة عن رقم فقط، نزيدو درهم، ويلا كان نص بحال "150 / 200" نخليوه كيفما هو
+    const isJustNumber = !isNaN(Number(price));
+    return isJustNumber ? `${price} درهم` : price;
+  };
+
   return (
     <main className="min-h-screen bg-white selection:bg-[#D4AF37] selection:text-black" dir="rtl">
       
-      {/* ستايل الشريط المتحرك - تم تغيير الاتجاه هنا */}
+      {/* ستايل الشريط المتحرك */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes scrollMarquee {
           0% { transform: translateX(-100%); }
@@ -175,7 +201,7 @@ export default function ClinicPage() {
         </div>
       </section>
 
-      {/* ---------- الإضافة 1: الشريط المتحرك تحت الهيرو (بدون إيموجي) ---------- */}
+      {/* ---------- الشريط المتحرك تحت الهيرو ---------- */}
       <div className="bg-[#D4AF37] py-2 overflow-hidden border-b border-gray-200 w-full relative z-30 flex items-center">
         <div className="animate-marquee whitespace-nowrap">
           <span className={`${amiri.className} text-black font-bold text-base md:text-lg mx-6`}>
@@ -186,10 +212,9 @@ export default function ClinicPage() {
           </span>
           <span className={`${amiri.className} text-black font-bold text-base md:text-lg mx-6`}>
             عناية طبية متقدمة • بروتوكولات علاجية آمنة وفعالة • خبراء وأطباء رهن إشارتك • حجز المواعيد متاح الآن •
-             </span>
+          </span>
           <span className={`${amiri.className} text-black font-bold text-base md:text-lg mx-6`}>
             عناية طبية متقدمة • بروتوكولات علاجية آمنة وفعالة • خبراء وأطباء رهن إشارتك • حجز المواعيد متاح الآن •
-          
           </span>
         </div>
       </div>
@@ -217,6 +242,25 @@ export default function ClinicPage() {
                 </svg>
               </span>
             </div>
+
+            {/* أزرار الأقسام - كيبانو غير يلا ماكانش الكليان كيكتب فالبحث */}
+            {!searchQuery && (
+              <div className="flex flex-wrap justify-center gap-2 md:gap-3 mt-8">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`${amiri.className} px-4 py-2 md:px-5 md:py-2.5 rounded-full text-sm md:text-base font-bold transition-all duration-300 ${
+                      activeCategory === cat.id
+                        ? "bg-black text-[#D4AF37] shadow-md scale-105"
+                        : "bg-white text-gray-600 border border-gray-200 hover:border-[#D4AF37] hover:text-black"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {isLoading ? (
@@ -224,7 +268,8 @@ export default function ClinicPage() {
               <div className="w-10 h-10 border-4 border-gray-200 rounded-full border-t-[#D4AF37] animate-spin"></div>
             </div>
           ) : 
-          /* ---------- الإضافة 2: إصلاح عرض البحث (إظهار النتيجة مباشرة) ---------- */
+          
+          /* عرض النتيجة مباشرة عند البحث */
           searchQuery ? (
             filteredProducts.length > 0 ? (
               <div className="mb-16">
@@ -249,7 +294,7 @@ export default function ClinicPage() {
                         </p>
                         <div className="mt-3 flex flex-col gap-2 border-t border-gray-100 pt-3">
                           <span className={`${amiri.className} text-base sm:text-lg font-bold text-[#D4AF37] text-center`}>
-                            {product.price ? `${product.price} درهم` : 'حسب الاستشارة'}
+                            {renderPrice(product.price)}
                           </span>
                           <button 
                             onClick={() => handleOpenModal(product.name)}
@@ -269,7 +314,7 @@ export default function ClinicPage() {
               </div>
             )
           ) : (
-            /* العرض العادي بالأقسام يلا ماكانش كيبحث */
+            /* العرض العادي بالأقسام يلا ماكانش كيبحث (مع الفلتر الجديد) */
             Object.keys(groupedProducts).length > 0 ? (
               Object.keys(groupedProducts).map((type) => (
                 <div key={type} className="mb-16 last:mb-0">
@@ -301,7 +346,7 @@ export default function ClinicPage() {
                           
                           <div className="mt-3 flex flex-col gap-2 border-t border-gray-100 pt-3">
                             <span className={`${amiri.className} text-base sm:text-lg font-bold text-[#D4AF37] text-center`}>
-                              {product.price ? `${product.price} درهم` : 'حسب الاستشارة'}
+                              {renderPrice(product.price)}
                             </span>
                             <button 
                               onClick={() => handleOpenModal(product.name)}
@@ -318,14 +363,14 @@ export default function ClinicPage() {
               ))
             ) : (
               <div className={`${amiri.className} text-center py-16 text-lg text-gray-500 bg-white rounded-2xl border border-dashed border-gray-200 shadow-sm`}>
-                لا توجد علاجات حالياً.
+                لا توجد علاجات حالياً في هذا القسم.
               </div>
             )
           )}
         </div>
       </section>
 
-      {/* ---------- الإضافة 3: بطاقة علاجات مختارة بعناية في الأسفل ---------- */}
+      {/* ---------- بطاقة علاجات مختارة بعناية في الأسفل ---------- */}
       <section className="py-12 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-black rounded-3xl p-8 md:p-12 text-center shadow-[0_10px_30px_rgba(0,0,0,0.1)] border border-[#D4AF37]/30 relative overflow-hidden">
