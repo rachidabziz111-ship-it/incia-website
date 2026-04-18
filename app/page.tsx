@@ -84,7 +84,7 @@ function Footer() {
 }
 
 // ---------- Hero Section ----------
-// تم إزالة الظلام الزائد وإظهار الصورة بشكل أفضل
+// تم إزالة الظلام الزائد وإظهار الصورة بشكل أفضل مع إضافة زر قسم العلاجات
 function Hero() {
   return (
     <section className="relative bg-slate-900 text-white pb-10" dir="rtl">
@@ -116,6 +116,15 @@ function Hero() {
             >
               ابدأ مشروع براندك الآن
             </Link>
+
+            {/* الزر الأساسي الجديد: قسم العلاجات */}
+            <Link
+              href="/clinic"
+              className={`${amiri.className} bg-[#0B3B60] hover:bg-[#082a45] text-white px-10 py-4 rounded-full font-bold text-xl transition-all shadow-lg border border-[#0B3B60]`}
+            >
+              قسم العلاجات
+            </Link>
+
             <Link
               href="/products"
               className={`${amiri.className} bg-white/10 backdrop-blur-sm border-2 border-white hover:bg-white hover:text-gray-900 text-white px-10 py-4 rounded-full font-bold text-xl transition-all`}
