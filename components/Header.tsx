@@ -1,124 +1,166 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Amiri } from "next/font/google"; 
+import { Amiri } from "next/font/google";
+import { useLanguage } from "@/lib/i18n/context";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"] });
 
 export default function Header() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { t, isRTL } = useLanguage();
 
-  const toggleMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const close = () => setOpen(false);
+  const dir = isRTL ? "rtl" : "ltr";
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm transition-all" dir="rtl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center relative min-h-[80px] py-3">
-          
-          {/* الجهة اليمنى: الروابط كاملة (فالبيسي) وزر القائمة (فالتليفون) */}
-          <div className="flex items-center z-10 lg:w-5/12">
-            {/* Desktop Nav - رجعنا الروابط لي تحيدو */}
-            <nav className={`${amiri.className} hidden lg:flex items-center gap-6`}>
-              <Link href="/" className="text-lg font-bold text-[#0B3B60] hover:text-[#D4AF37] transition-colors">الرئيسية</Link>
-              <Link href="/about" className="text-lg font-bold text-[#0B3B60] hover:text-[#D4AF37] transition-colors">مختبراتنا</Link>
-              <Link href="/products" className="text-lg font-bold text-[#0B3B60] hover:text-[#D4AF37] transition-colors">كتالوج الجملة</Link>
-              <Link href="/contact" className="text-lg font-bold text-[#0B3B60] hover:text-[#D4AF37] transition-colors">تواصل معنا</Link>
-            </nav>
-
-            {/* Mobile Menu Button - أيقونة التليفون */}
-            <button 
-              onClick={toggleMenu}
-              className="lg:hidden p-2 text-[#0B3B60] hover:text-[#D4AF37] focus:outline-none transition-colors"
-            >
-              {isMobileMenuOpen ? (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
-          </div>
-
-          {/* الوسط تماماً: اللوغو */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex justify-center">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="relative w-16 h-16 transition-transform group-hover:scale-105">
-                <Image 
-                  src="/logo.png" 
-                  alt="INCIA Laboratory Logo" 
-                  fill
-                  className="object-contain"
-                />
-              </div>
-              <span className="font-serif text-2xl md:text-3xl font-bold text-[#0B3B60] tracking-wider hidden sm:block" dir="ltr">
-                INCIA<span className="text-[#D4AF37] ml-0.5">®</span>
-              </span>
-            </Link>
-          </div>
-
-          {/* الجهة اليسرى: رابط العيادة (للبنات) + زر ابدأ براندك (للمستثمرين) */}
-          <div className="hidden lg:flex items-center justify-end z-10 lg:w-5/12 gap-5">
-            {/* رابط العيادة الطبية */}
-            <Link 
-              href="/clinic" 
-              className={`${amiri.className} text-[#D4AF37] hover:text-[#0B3B60] transition-colors text-lg font-bold flex items-center gap-1.5`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-              </svg>
-              العيادة
-            </Link>
-
-            {/* زر الجملة */}
-            <Link
-              href="/wholesale"
-              className={`${amiri.className} bg-[#D4AF37] hover:bg-[#b5952f] text-white px-7 py-2.5 rounded-full text-lg font-bold transition-all shadow-md hover:shadow-lg`}
-            >
-              ابدأ براندك
-            </Link>
-          </div>
-
-        </div>
+    <>
+      {/* ── شريط الإعلان ── */}
+      <div className="bg-[#0a3b33] text-white text-center py-2 px-4 text-[11px] tracking-wider font-medium">
+        <span className="text-[#C8A96E]">✦</span>
+        <span className={`${amiri.className} mx-3 text-sm`}>{t.announcement}</span>
+        <span className="text-[#C8A96E]">✦</span>
       </div>
 
-      {/* Mobile Menu Dropdown (القائمة اللي كتهبط فالتليفون) */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-gray-100 absolute w-full shadow-2xl z-40 max-h-[80vh] overflow-y-auto">
-          <nav className={`${amiri.className} flex flex-col px-6 pt-4 pb-8 space-y-4`}>
-            <Link href="/" onClick={toggleMenu} className="block text-lg font-bold text-[#0B3B60] hover:text-[#D4AF37]">الرئيسية</Link>
-            <Link href="/about" onClick={toggleMenu} className="block text-lg font-bold text-[#0B3B60] hover:text-[#D4AF37]">مختبراتنا</Link>
-            <Link href="/contact" onClick={toggleMenu} className="block text-lg font-bold text-[#0B3B60] hover:text-[#D4AF37]">تواصل معنا</Link>
-            
-            {/* قسم خاص بالعيادة (للأفراد) */}
-            <div className="pt-4 mt-2 border-t border-gray-100">
-              <span className="text-sm text-gray-400 mb-2 block">للعناية الفردية</span>
-              <Link href="/clinic" onClick={toggleMenu} className="flex items-center text-lg font-bold text-[#D4AF37] hover:text-[#0B3B60]">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 ml-2">
-                  <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-                </svg>
-                زيارة العيادة الطبية (العلاجات)
+      {/* ── الهيدر الرئيسي ── */}
+      <header
+        dir={dir}
+        className={`sticky top-0 z-50 bg-white border-b transition-all duration-300 ${
+          scrolled ? "shadow-md border-gray-200" : "border-gray-100 shadow-none"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative flex items-center justify-between h-[72px]">
+
+            {/* ── الروابط (ديسكتوب) / هامبرغر (موبايل) ── */}
+            <div className="flex items-center lg:w-5/12">
+              <nav className={`${amiri.className} hidden lg:flex items-center gap-7`}>
+                {[
+                  { href: "/", label: t.nav.home },
+                  { href: "/about", label: t.nav.lab },
+                  { href: "/products", label: t.nav.catalog },
+                  { href: "/contact", label: t.nav.contact },
+                ].map(({ href, label }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="text-[#0a3b33] hover:text-[#C8A96E] font-bold text-[15px] tracking-wide transition-colors relative group"
+                  >
+                    {label}
+                    <span className="absolute -bottom-1 right-0 w-0 group-hover:w-full h-px bg-[#C8A96E] transition-all duration-300" />
+                  </Link>
+                ))}
+              </nav>
+
+              <button
+                onClick={() => setOpen(!open)}
+                className="lg:hidden p-2 text-[#0a3b33] hover:text-[#C8A96E] transition-colors"
+                aria-label="menu"
+              >
+                {open ? (
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
+
+            {/* ── اللوغو (الوسط) ── */}
+            <Link
+              href="/"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2.5 group"
+            >
+              <div className="relative w-11 h-11 transition-transform duration-300 group-hover:scale-105">
+                <Image src="/logo.png" alt="INCIA" fill className="object-contain" />
+              </div>
+              <div className="hidden sm:block leading-tight">
+                <div className="font-serif text-[22px] font-bold text-[#0a3b33] tracking-[0.15em]" dir="ltr">
+                  INCIA<span className="text-[#C8A96E] text-lg">®</span>
+                </div>
+                <div className="text-[8px] text-[#0a3b33]/40 tracking-[0.35em] uppercase font-semibold -mt-0.5" dir="ltr">
+                  Medical Cosmetics
+                </div>
+              </div>
+            </Link>
+
+            {/* ── اليمين: مبدّل اللغة + زر الجملة (ديسكتوب) ── */}
+            <div className="hidden lg:flex items-center justify-end lg:w-5/12 gap-4">
+              <LanguageSwitcher />
+              <Link
+                href="/clinic"
+                className={`${amiri.className} text-[#0a3b33]/60 hover:text-[#0a3b33] transition-colors text-sm font-bold border-b border-transparent hover:border-[#C8A96E] pb-px`}
+              >
+                {t.nav.clinic}
+              </Link>
+              <Link
+                href="/wholesale"
+                className={`${amiri.className} bg-[#0a3b33] hover:bg-[#156b5a] text-white px-6 py-2.5 rounded-full text-sm font-bold tracking-wide transition-all shadow-sm hover:shadow-md`}
+              >
+                {t.nav.startBrand}
               </Link>
             </div>
 
-            {/* قسم خاص بالجملة (للمستثمرين) */}
-            <div className="pt-4 border-t border-gray-100 space-y-3">
-              <span className="text-sm text-gray-400 block">للتجار وأصحاب العلامات</span>
-              <Link href="/products" onClick={toggleMenu} className="block text-lg font-bold text-[#0B3B60] hover:text-[#D4AF37]">كتالوج منتجات الجملة</Link>
-              <Link href="/wholesale" onClick={toggleMenu} className="block w-full text-center bg-[#D4AF37] text-white px-5 py-3.5 rounded-full font-bold shadow-md hover:bg-[#b5952f] transition-colors text-lg mt-4">
-                ابدأ مشروع براندك الآن
-              </Link>
-            </div>
-
-          </nav>
+          </div>
         </div>
-      )}
-    </header>
+
+        {/* ── قائمة الموبايل ── */}
+        {open && (
+          <div className="lg:hidden absolute w-full bg-white border-t border-gray-100 shadow-2xl z-40">
+            <nav className={`${amiri.className} flex flex-col px-6 py-5 gap-1`} dir={dir}>
+              {[
+                { href: "/", label: t.nav.home },
+                { href: "/about", label: t.nav.lab },
+                { href: "/products", label: t.nav.mobileWholesale },
+                { href: "/contact", label: t.nav.contact },
+              ].map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={close}
+                  className="text-[#0a3b33] font-bold text-lg py-3 border-b border-gray-50 hover:text-[#C8A96E] transition-colors"
+                >
+                  {label}
+                </Link>
+              ))}
+              <Link
+                href="/clinic"
+                onClick={close}
+                className="text-[#C8A96E] font-bold text-lg py-3 border-b border-gray-50"
+              >
+                ✦ {t.nav.mobileClinic}
+              </Link>
+
+              {/* مبدّل اللغة في الموبايل */}
+              <div className="py-4 flex items-center gap-3">
+                <span className="text-xs text-gray-400 font-medium">Language:</span>
+                <LanguageSwitcher />
+              </div>
+
+              <Link
+                href="/wholesale"
+                onClick={close}
+                className="block text-center bg-[#0a3b33] hover:bg-[#156b5a] text-white px-5 py-3.5 rounded-full font-bold text-lg transition-all mt-1"
+              >
+                {t.nav.mobileStart}
+              </Link>
+            </nav>
+          </div>
+        )}
+      </header>
+    </>
   );
 }
