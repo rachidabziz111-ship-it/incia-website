@@ -317,4 +317,4 @@ const fr = {
 }
 
 export const translations = { ar, en, fr } as const
-export type T = typeof ar
+export type T = (typeof translations)[Locale]
