@@ -4,50 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Amiri } from "next/font/google";
 import { useLanguage } from "@/lib/i18n/context";
-import FlipProductCard from "@/components/FlipProductCard";
+import CatalogCard from "@/components/CatalogCard";
 
 const amiri = Amiri({ subsets: ["arabic"], weight: ["400", "700"] });
-
-function AutoRow({ products, direction }: { products: any[]; direction: "left" | "right" }) {
-  const doubled = [...products, ...products, ...products];
-  return (
-    <div className="overflow-hidden w-full">
-      <div className={`flex gap-4 w-max py-2 ${direction === "left" ? "auto-row-left" : "auto-row-right"}`}>
-        {doubled.map((product, i) => (
-          <div key={`${product.id}-${i}`} className="shrink-0">
-            <FlipProductCard product={product} />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ZigzagGrid({ products }: { products: any[] }) {
-  if (products.length === 0) return null;
-  const rows = [
-    products.filter((_: any, i: number) => i % 3 === 0),
-    products.filter((_: any, i: number) => i % 3 === 1),
-    products.filter((_: any, i: number) => i % 3 === 2),
-  ].map((r) => (r.length > 0 ? r : products));
-
-  return (
-    <>
-      <style>{`
-        @keyframes slideLeft  { from{transform:translateX(0)} to{transform:translateX(-33.333%)} }
-        @keyframes slideRight { from{transform:translateX(-33.333%)} to{transform:translateX(0)} }
-        .auto-row-left  { animation: slideLeft  28s linear infinite; }
-        .auto-row-right { animation: slideRight 28s linear infinite; }
-        .auto-row-left:hover, .auto-row-right:hover { animation-play-state: paused; }
-      `}</style>
-      <div className="flex flex-col gap-4">
-        <AutoRow products={rows[0]} direction="left"  />
-        <AutoRow products={rows[1]} direction="right" />
-        <AutoRow products={rows[2]} direction="left"  />
-      </div>
-    </>
-  );
-}
 
 const CERT_ICONS = [
   { name: "وزارة الصحة", src: "/moh.png" },
@@ -139,7 +98,11 @@ function FeaturedProducts({ products }: { products: any[] }) {
 
         <div>
           {products && products.length > 0 ? (
-            <ZigzagGrid products={products} />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-4">
+              {products.map((product: any) => (
+                <CatalogCard key={product.id} product={product} />
+              ))}
+            </div>
           ) : (
             <div className={`${amiri.className} col-span-full text-center text-gray-400 py-16 border-2 border-dashed border-gray-100 rounded-3xl text-lg`}>
               {t.featured.empty}
